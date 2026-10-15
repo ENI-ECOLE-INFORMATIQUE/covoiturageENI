@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérification en attente — ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="alert alert-success">
+                <h4 class="alert-heading">Vérifiez votre boîte mail</h4>
+                <p class="mb-0">
+                    Un lien de confirmation vient d'être envoyé à votre adresse @campus-eni.fr.
+                    Cliquez dessus pour activer votre compte.
+                </p>
+            </div>
+            <p class="text-center">
+                <a href="{{ path('app_login') }}">Retour à la connexion</a>
+            </p>
+        </div>
+    </div>
+{% endblock %}

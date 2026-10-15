@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="p-5 mb-4 bg-primary text-white rounded-3">
+        <h1 class="display-5 fw-bold">ENI Covoiturage</h1>
+        <p class="col-md-8 fs-5">
+            Partagez vos trajets vers les campus ENI au sein de la communauté :
+            étudiants, formateurs et personnel.
+        </p>
+    </div>
+
+    <h2 class="mb-3">Campus ENI</h2>
+    <div class="row">
+        {% for site in sites %}
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ site.nom }}</h5>
+                        <p class="card-text text-muted mb-0">Campus de rattachement</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="alert alert-info mt-4">
+        La recherche et la publication de trajets arrivent au jalon M2.
+        Créez votre compte dès maintenant pour être prêt.
+    </div>
+{% endblock %}

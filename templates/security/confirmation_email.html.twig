@@ -1,0 +1,12 @@
+<h1>Bienvenue {{ nomComplet }} !</h1>
+
+<p>
+    Cliquez sur le lien ci-dessous pour vérifier votre adresse email
+    et activer votre compte ENI Covoiturage :
+</p>
+
+<p><a href="{{ signedUrl }}">Vérifier mon adresse email</a></p>
+
+<p>Ce lien expire le {{ expiresAt|date('d/m/Y à H:i') }}.</p>
+
+<p>Si vous n'êtes pas à l'origine de cette inscription, ignorez simplement ce message.</p>
