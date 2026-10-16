@@ -31,4 +31,17 @@ class AvisRepository extends ServiceEntityRepository
 
         return null !== $moyenne && '' !== $moyenne ? (float) $moyenne : null;
     }
+
+    /**
+     * Moyenne générale des notes publiées sur la plateforme (null si aucun avis).
+     */
+    public function moyenneGenerale(): ?float
+    {
+        $moyenne = $this->createQueryBuilder('a')
+            ->select('AVG(a.note)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return null !== $moyenne && '' !== $moyenne ? (float) $moyenne : null;
+    }
 }

@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Membres — Administration ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <h1 class="h3 mb-3">Membres ({{ membres|length }})</h1>
+
+    <table class="table table-hover align-middle">
+        <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Statut</th>
+            <th>Campus</th>
+            <th>Rôles</th>
+            <th>État</th>
+            <th class="text-end">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for membre in membres %}
+            <tr>
+                <td>{{ membre.prenom }} {{ membre.nom }}</td>
+                <td>{{ membre.email }}</td>
+                <td>{{ membre.statut.libelle }}</td>
+                <td>{{ membre.campusRattachement.nom }}</td>
+                <td>
+                    {% if 'ROLE_ADMIN' in membre.roles %}<span class="badge bg-dark">admin</span>{% else %}<span class="badge bg-light text-dark">membre</span>{% endif %}
+                </td>
+                <td>
+                    <span class="badge bg-{{ membre.actif ? 'success' : 'secondary' }}">{{ membre.actif ? 'actif' : 'désactivé' }}</span>
+                    {% if membre.emailVerifieLe is null %}<span class="badge bg-warning text-dark">email non vérifié</span>{% endif %}
+                </td>
+                <td class="text-end">
+                    {% if membre.id != app.user.id %}
+                        <form method="post" action="{{ path('app_admin_membre_basculer', {'id': membre.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('basculer' ~ membre.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-{{ membre.actif ? 'danger' : 'success' }}">
+                                {{ membre.actif ? 'Désactiver' : 'Réactiver' }}
+                            </button>
+                        </form>
+                    {% else %}
+                        <span class="text-muted">vous</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

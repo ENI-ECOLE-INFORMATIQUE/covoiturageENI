@@ -101,4 +101,24 @@ class TrajetRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Nombre de trajets ouverts à venir, groupés par campus (statistiques admin).
+     *
+     * @return array<int, array{nom: string, nb: int}>
+     */
+    public function compterOuvertsFutursParSite(): array
+    {
+        return $this->createQueryBuilder('t')
+            ->select('s.nom AS nom, COUNT(t.id) AS nb')
+            ->join('t.site', 's')
+            ->andWhere('t.statut = :statut')
+            ->andWhere('t.dateDepart >= :maintenant')
+            ->setParameter('statut', StatutTrajet::Ouvert)
+            ->setParameter('maintenant', new \DateTimeImmutable())
+            ->groupBy('s.id')
+            ->orderBy('s.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

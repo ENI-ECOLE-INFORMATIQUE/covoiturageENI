@@ -50,8 +50,19 @@ php bin/phpunit
 - M2 — Trajets (publication, recherche, réservation modérée, règles métier
   1 à 5) : **terminé**
 - M3 — Avis, profils, notifications : **terminé**
-- M4 — Back-office, modération, statistiques
+- M4 — Back-office, modération, statistiques : **terminé**
 - M5 — Durcissement, mise en production
+
+## M4 en bref
+
+- **Administration** sous `/admin` (ROLE_ADMIN, lien de navigation dédié).
+- **Statistiques** : membres, campus, trajets, réservations acceptées,
+  note moyenne, trajets ouverts à venir par campus.
+- **Campus** : créer, modifier, activer/désactiver (un campus désactivé
+  disparaît des recherches et de l'inscription).
+- **Membres** : désactiver/réactiver un compte (garde anti-auto-désactivation ;
+  un compte désactivé ne peut plus se connecter).
+- **Avis** : consultation et suppression (modération).
 
 ## M3 en bref
 

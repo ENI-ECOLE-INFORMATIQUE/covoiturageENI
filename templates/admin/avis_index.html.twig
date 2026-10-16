@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Avis — Administration ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <h1 class="h3 mb-3">Modération des avis ({{ avis|length }})</h1>
+
+    {% if avis is empty %}
+        <div class="alert alert-info">Aucun avis publié pour le moment.</div>
+    {% else %}
+        {% for unAvis in avis %}
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>
+                                <a href="{{ path('app_profil', {'id': unAvis.auteur.id}) }}" class="text-decoration-none">{{ unAvis.auteur.prenom }} {{ unAvis.auteur.nom }}</a>
+                                &rarr;
+                                <a href="{{ path('app_profil', {'id': unAvis.cible.id}) }}" class="text-decoration-none">{{ unAvis.cible.prenom }} {{ unAvis.cible.nom }}</a>
+                            </strong>
+                            <span class="badge bg-primary">{{ unAvis.note }} / 5</span>
+                            <span class="text-muted small"> &middot; {{ unAvis.creeLe|date('d/m/Y') }}
+                                &middot; {{ unAvis.participation.trajet.villeDepart }} → {{ unAvis.participation.trajet.villeArrivee }}</span>
+                            {% if unAvis.commentaire %}
+                                <p class="mb-0 mt-1">{{ unAvis.commentaire|nl2br }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="align-self-center">
+                            <form method="post" action="{{ path('app_admin_avis_supprimer', {'id': unAvis.id}) }}"
+                                  onsubmit="return confirm('Supprimer cet avis ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('supprimer' ~ unAvis.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

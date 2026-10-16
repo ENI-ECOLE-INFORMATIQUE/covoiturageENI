@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration — ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Administration</h1>
+        <div>
+            <a href="{{ path('app_admin_site_index') }}" class="btn btn-outline-primary btn-sm">Campus</a>
+            <a href="{{ path('app_admin_membre_index') }}" class="btn btn-outline-primary btn-sm">Membres</a>
+            <a href="{{ path('app_admin_avis_index') }}" class="btn btn-outline-primary btn-sm">Avis</a>
+        </div>
+    </div>
+
+    <h2 class="h5 mb-3">Statistiques</h2>
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <p class="display-6 fw-bold mb-0">{{ nbMembres }}</p>
+                    <p class="text-muted mb-0">Membres</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <p class="display-6 fw-bold mb-0">{{ nbSitesActifs }}</p>
+                    <p class="text-muted mb-0">Campus actifs ({{ nbSitesInactifs }} inactifs)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <p class="display-6 fw-bold mb-0">{{ nbTrajets }}</p>
+                    <p class="text-muted mb-0">Trajets publiés ({{ nbTrajetsOuverts }} ouverts)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <p class="display-6 fw-bold mb-0">{{ nbParticipationsAcceptees }}</p>
+                    <p class="text-muted mb-0">Réservations acceptées</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <p class="display-6 fw-bold mb-0">
+                        {% if moyenneAvis is not null %}{{ moyenneAvis|number_format(1, ',', ' ') }} / 5{% else %}—{% endif %}
+                    </p>
+                    <p class="text-muted mb-0">Note moyenne ({{ nbAvis }} avis)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6">Trajets ouverts à venir par campus</h3>
+                    {% if trajetsParCampus is empty %}
+                        <p class="text-muted mb-0">Aucun trajet ouvert à venir.</p>
+                    {% else %}
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                            {% for ligne in trajetsParCampus %}
+                                <tr>
+                                    <td>{{ ligne.nom }}</td>
+                                    <td class="text-end"><strong>{{ ligne.nb }}</strong></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

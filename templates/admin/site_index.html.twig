@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Campus — Administration ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">Campus</h1>
+        <a href="{{ path('app_admin_site_nouveau') }}" class="btn btn-primary">Ajouter un campus</a>
+    </div>
+
+    <table class="table table-hover align-middle">
+        <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Ville</th>
+            <th>Code postal</th>
+            <th>État</th>
+            <th class="text-end">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for site in sites %}
+            <tr>
+                <td>{{ site.nom }}</td>
+                <td>{{ site.ville ?? '—' }}</td>
+                <td>{{ site.codePostal ?? '—' }}</td>
+                <td>
+                    <span class="badge bg-{{ site.actif ? 'success' : 'secondary' }}">{{ site.actif ? 'actif' : 'désactivé' }}</span>
+                </td>
+                <td class="text-end">
+                    <a href="{{ path('app_admin_site_modifier', {'id': site.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                    <form method="post" action="{{ path('app_admin_site_basculer', {'id': site.id}) }}" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('basculer' ~ site.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-{{ site.actif ? 'danger' : 'success' }}">
+                            {{ site.actif ? 'Désactiver' : 'Activer' }}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="text-muted">
+        Un campus désactivé disparaît des recherches et du formulaire d'inscription,
+        sans affecter les membres qui y sont rattachés ni les trajets existants.
+    </p>
+{% endblock %}
