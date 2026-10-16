@@ -37,7 +37,7 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <h2 class="h5">Conducteur</h2>
-                    <p class="mb-1"><strong>{{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}</strong> — {{ trajet.conducteur.statut.libelle }}</p>
+                    <p class="mb-1"><strong><a href="{{ path('app_profil', {'id': trajet.conducteur.id}) }}" class="text-decoration-none">{{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}</a></strong> — {{ trajet.conducteur.statut.libelle }}</p>
                     {% if trajet.vehicule %}
                         <p class="mb-1 text-muted">
                             Véhicule : {{ trajet.vehicule.marque }} {{ trajet.vehicule.modele }}
@@ -89,7 +89,7 @@
                                 <tbody>
                                 {% for participation in trajet.participations %}
                                     <tr>
-                                        <td>{{ participation.membre.prenom }} {{ participation.membre.nom }}</td>
+                                        <td><a href="{{ path('app_profil', {'id': participation.membre.id}) }}" class="text-decoration-none">{{ participation.membre.prenom }} {{ participation.membre.nom }}</a></td>
                                         <td>{{ participation.nbPlaces }} place(s)</td>
                                         <td>
                                             <span class="badge bg-{% if participation.statut.value == 'accepte' %}success{% elseif participation.statut.value == 'refuse' %}danger{% elseif participation.statut.value == 'annule' %}secondary{% else %}warning{% endif %}">

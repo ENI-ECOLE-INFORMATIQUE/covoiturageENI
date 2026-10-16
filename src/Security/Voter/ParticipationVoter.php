@@ -15,10 +15,11 @@ final class ParticipationVoter extends Voter
 {
     public const ANNULER = 'PARTICIPATION_ANNULER';
     public const GERER = 'PARTICIPATION_GERER';
+    public const NOTER = 'PARTICIPATION_NOTER';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return \in_array($attribute, [self::ANNULER, self::GERER], true)
+        return \in_array($attribute, [self::ANNULER, self::GERER, self::NOTER], true)
             && $subject instanceof Participation;
     }
 
@@ -36,6 +37,8 @@ final class ParticipationVoter extends Voter
 
         return match ($attribute) {
             self::ANNULER => null !== $passager && $passager->getId() === $membre->getId(),
+            self::NOTER => (null !== $passager && $passager->getId() === $membre->getId())
+                || (null !== $conducteur && $conducteur->getId() === $membre->getId()),
             self::GERER => null !== $conducteur && $conducteur->getId() === $membre->getId(),
             default => false,
         };

@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Laisser un avis — ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-2">Laisser un avis</h1>
+                    <p class="text-muted">
+                        Votre évaluation de <strong>{{ cible.prenom }} {{ cible.nom }}</strong>
+                        pour le trajet {{ participation.trajet.villeDepart }} &rarr;
+                        {{ participation.trajet.villeArrivee }}
+                        du {{ participation.trajet.dateDepart|date('d/m/Y à H:i') }}.
+                    </p>
+                    {{ form_start(form) }}
+                    {{ form_widget(form) }}
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

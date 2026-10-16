@@ -9,6 +9,8 @@
 parameters:
     # Règle métier 5 : réservation impossible moins de X heures avant le départ.
     app.delai_reservation_heures: 2
+    # Règle métier 6 : avis possible X heures après le départ.
+    app.delai_avis_heures: 1
 
 services:
     # default configuration for services in *this* file

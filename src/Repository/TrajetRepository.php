@@ -81,4 +81,24 @@ class TrajetRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Prochains trajets ouverts publiés par un conducteur (pour son profil public).
+     *
+     * @return Trajet[]
+     */
+    public function findFutursOuvertsPour(\App\Entity\Membre $conducteur): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.conducteur = :conducteur')
+            ->andWhere('t.statut = :statut')
+            ->andWhere('t.dateDepart >= :maintenant')
+            ->setParameter('conducteur', $conducteur)
+            ->setParameter('statut', StatutTrajet::Ouvert)
+            ->setParameter('maintenant', new \DateTimeImmutable())
+            ->orderBy('t.dateDepart', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+    }
 }

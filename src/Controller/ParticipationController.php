@@ -8,6 +8,7 @@ use App\Enum\StatutParticipation;
 use App\Enum\StatutTrajet;
 use App\Form\ReservationType;
 use App\Security\Voter\ParticipationVoter;
+use App\Service\Notifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -18,6 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ParticipationController extends AbstractController
 {
     public function __construct(
+        private readonly Notifier $notifier,
         #[Autowire('%app.delai_reservation_heures%')]
         private readonly int $delaiReservationHeures,
     ) {
@@ -80,6 +82,7 @@ final class ParticipationController extends AbstractController
         $entityManager->persist($participation);
         $entityManager->flush();
 
+        $this->notifier->nouvelleDemande($participation);
         $this->addFlash('success', 'Demande envoyée au conducteur.');
 
         return $redirection;
@@ -106,6 +109,8 @@ final class ParticipationController extends AbstractController
             }
 
             $entityManager->flush();
+
+            $this->notifier->demandeAcceptee($participation);
             $this->addFlash('success', 'Demande acceptée.');
         }
 
@@ -126,6 +131,8 @@ final class ParticipationController extends AbstractController
             // Règle métier 3 : le conducteur peut refuser une réservation.
             $participation->setStatut(StatutParticipation::Refuse);
             $entityManager->flush();
+
+            $this->notifier->demandeRefusee($participation);
             $this->addFlash('success', 'Demande refusée.');
         }
 

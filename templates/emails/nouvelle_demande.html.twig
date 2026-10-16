@@ -1,0 +1,14 @@
+<h1>Bonjour {{ participation.trajet.conducteur.prenom }},</h1>
+
+<p>
+    <strong>{{ participation.membre.prenom }} {{ participation.membre.nom }}</strong>
+    demande {{ participation.nbPlaces }} place(s) sur votre trajet
+    <strong>{{ participation.trajet.villeDepart }} &rarr; {{ participation.trajet.villeArrivee }}</strong>
+    du {{ participation.trajet.dateDepart|date('d/m/Y à H:i') }}.
+</p>
+
+<p>
+    Connectez-vous à ENI Covoiturage pour accepter ou refuser cette demande.
+</p>
+
+<p>À bientôt,<br>L'équipe ENI Covoiturage</p>

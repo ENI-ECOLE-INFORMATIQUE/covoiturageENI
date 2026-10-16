@@ -49,9 +49,32 @@ php bin/phpunit
   initiaux : **terminé**
 - M2 — Trajets (publication, recherche, réservation modérée, règles métier
   1 à 5) : **terminé**
-- M3 — Avis, profils, notifications
+- M3 — Avis, profils, notifications : **terminé**
 - M4 — Back-office, modération, statistiques
 - M5 — Durcissement, mise en production
+
+## M3 en bref
+
+- **Avis (règle métier 6)** : un avis par participation acceptée, 1 h après
+  le départ, note 1 à 5 + commentaire ; le passager note le conducteur et
+  inversement (premier à laisser son avis).
+- **Profils publics** (`/membre/{id}`) : statut, campus, moyenne des notes,
+  avis reçus, prochains trajets proposés.
+- **Notifications email asynchrones** (Messenger, transport Doctrine) :
+  nouvelle demande, acceptation, refus, annulation de trajet. Les messages
+  attendent dans la table `messenger_messages`.
+
+### Envoyer réellement les emails
+
+```bash
+# 1. Configurer MAILER_DSN dans .env.local (ex. Mailtrap)
+#    MAILER_DSN="smtp://utilisateur:motdepasse@sandbox.smtp.mailtrap.io:2525"
+# 2. Lancer le consommateur (dans un terminal dédié) :
+bin/console messenger:consume async
+```
+
+Sans consommateur, les messages restent en file (aucune perte) ; les
+échecs partent dans la file `failed` (transport `failed`).
 
 ## M2 en bref
 

@@ -35,7 +35,8 @@
             {% if mesParticipations is empty %}
                 <div class="alert alert-info">Aucune réservation de votre part.</div>
             {% else %}
-                {% for participation in mesParticipations %}
+                {% for ligne in mesParticipations %}
+                    {% set participation = ligne.participation %}
                     <div class="card mb-2">
                         <div class="card-body py-2">
                             <div class="d-flex justify-content-between">
@@ -44,7 +45,14 @@
                                     <span class="text-muted"> &middot; {{ participation.trajet.dateDepart|date('d/m/Y H:i') }}</span>
                                     <span class="badge bg-{% if participation.statut.value == 'accepte' %}success{% elseif participation.statut.value == 'refuse' %}danger{% elseif participation.statut.value == 'annule' %}secondary{% else %}warning{% endif %}">{{ participation.statut.value }}</span>
                                 </div>
-                                <a href="{{ path('app_trajet_show', {'id': participation.trajet.id}) }}" class="btn btn-sm btn-outline-primary align-self-center">Voir</a>
+                                <div class="align-self-center text-nowrap">
+                                    {% if ligne.peutLaisserAvis %}
+                                        <a href="{{ path('app_avis_nouveau', {'id': participation.id}) }}" class="btn btn-sm btn-outline-success">Laisser un avis</a>
+                                    {% elseif ligne.dejaNote %}
+                                        <span class="badge bg-light text-dark">Avis envoyé</span>
+                                    {% endif %}
+                                    <a href="{{ path('app_trajet_show', {'id': participation.trajet.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                </div>
                             </div>
                         </div>
                     </div>

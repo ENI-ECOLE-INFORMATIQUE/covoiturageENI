@@ -9,6 +9,8 @@ use App\Form\TrajetType;
 use App\Repository\TrajetRepository;
 use App\Repository\VehiculeRepository;
 use App\Security\Voter\TrajetVoter;
+use App\Service\EligibiliteAvis;
+use App\Service\Notifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -21,6 +23,8 @@ final class TrajetController extends AbstractController
     public function __construct(
         private readonly TrajetRepository $trajetRepository,
         private readonly VehiculeRepository $vehiculeRepository,
+        private readonly EligibiliteAvis $eligibiliteAvis,
+        private readonly Notifier $notifier,
         #[Autowire('%app.delai_reservation_heures%')]
         private readonly int $delaiReservationHeures,
     ) {
@@ -166,6 +170,14 @@ final class TrajetController extends AbstractController
                 }
             }
             $entityManager->flush();
+
+            // Règle métier 4 : chaque participant est notifié.
+            foreach ($trajet->getParticipations() as $participation) {
+                if (StatutParticipation::Annule === $participation->getStatut()) {
+                    $this->notifier->trajetAnnule($participation);
+                }
+            }
+
             $this->addFlash('success', 'Trajet annulé : les participants en sont informés.');
         }
 
@@ -178,10 +190,22 @@ final class TrajetController extends AbstractController
         /** @var \App\Entity\Membre $membre */
         $membre = $this->getUser();
 
+        $participations = $entityManager->getRepository(\App\Entity\Participation::class)
+            ->findBy(['membre' => $membre], ['creeLe' => 'DESC']);
+
+        // Règle métier 6 : le passager peut noter les participations éligibles.
+        $participationsVue = [];
+        foreach ($participations as $participation) {
+            $participationsVue[] = [
+                'participation' => $participation,
+                'peutLaisserAvis' => $this->eligibiliteAvis->peutLaisserAvis($participation),
+                'dejaNote' => null !== $entityManager->getRepository(\App\Entity\Avis::class)->findOneBy(['participation' => $participation]),
+            ];
+        }
+
         return $this->render('trajet/mes_trajets.html.twig', [
             'trajetsConduits' => $this->trajetRepository->findByConducteur($membre->getId()),
-            'mesParticipations' => $entityManager->getRepository(\App\Entity\Participation::class)
-                ->findBy(['membre' => $membre], ['creeLe' => 'DESC']),
+            'mesParticipations' => $participationsVue,
         ]);
     }
 }

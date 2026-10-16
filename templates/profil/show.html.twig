@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ membre.prenom }} {{ membre.nom }} — ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="h3 mb-1">{{ membre.prenom }} {{ membre.nom }}</h1>
+                    <p class="text-muted mb-2">
+                        {{ membre.statut.libelle }} &middot; {{ membre.campusRattachement.nom }}
+                    </p>
+                    {% if moyenne is not null %}
+                        <p class="display-6 fw-bold mb-0">{{ moyenne|number_format(1, ',', ' ') }} / 5</p>
+                        <p class="text-muted">{{ avis|length }} avis</p>
+                    {% else %}
+                        <p class="text-muted mb-0">Pas encore d'avis.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if trajetsAvenir is not empty %}
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h2 class="h6">Prochains trajets proposés</h2>
+                        <ul class="list-unstyled mb-0">
+                            {% for trajet in trajetsAvenir %}
+                                <li>
+                                    <a href="{{ path('app_trajet_show', {'id': trajet.id}) }}">
+                                        {{ trajet.villeDepart }} &rarr; {{ trajet.villeArrivee }}
+                                    </a>
+                                    <span class="text-muted">{{ trajet.dateDepart|date('d/m H:i') }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-8">
+            <h2 class="h5 mb-3">Avis reçus</h2>
+            {% if avis is empty %}
+                <div class="alert alert-info">Aucun avis pour le moment.</div>
+            {% else %}
+                {% for unAvis in avis %}
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ unAvis.auteur.prenom }} {{ unAvis.auteur.nom }}</strong>
+                                <span class="badge bg-primary align-self-start">{{ unAvis.note }} / 5</span>
+                            </div>
+                            {% if unAvis.commentaire %}
+                                <p class="mb-0 mt-1">{{ unAvis.commentaire|nl2br }}</p>
+                            {% endif %}
+                            <p class="text-muted small mb-0 mt-1">{{ unAvis.creeLe|date('d/m/Y') }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

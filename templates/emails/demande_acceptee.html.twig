@@ -1,0 +1,15 @@
+<h1>Bonjour {{ participation.membre.prenom }},</h1>
+
+<p>
+    Bonne nouvelle : votre demande pour le trajet
+    <strong>{{ participation.trajet.villeDepart }} &rarr; {{ participation.trajet.villeArrivee }}</strong>
+    du {{ participation.trajet.dateDepart|date('d/m/Y à H:i') }}
+    a été acceptée par {{ participation.trajet.conducteur.prenom }}.
+</p>
+
+<p>
+    Pensez à régler la participation aux frais ({{ participation.trajet.prix|number_format(2, ',', ' ') }} €)
+    directement au conducteur.
+</p>
+
+<p>À bientôt,<br>L'équipe ENI Covoiturage</p>

@@ -1,0 +1,15 @@
+<h1>Bonjour {{ participation.membre.prenom }},</h1>
+
+<p>
+    Votre demande pour le trajet
+    <strong>{{ participation.trajet.villeDepart }} &rarr; {{ participation.trajet.villeArrivee }}</strong>
+    du {{ participation.trajet.dateDepart|date('d/m/Y à H:i') }}
+    n'a pas été acceptée par le conducteur.
+</p>
+
+<p>
+    D'autres trajets sont peut-être disponibles sur la plateforme :
+    consultez la recherche depuis la page d'accueil.
+</p>
+
+<p>À bientôt,<br>L'équipe ENI Covoiturage</p>

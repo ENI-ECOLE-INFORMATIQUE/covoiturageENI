@@ -1,0 +1,14 @@
+<h1>Bonjour {{ participation.membre.prenom }},</h1>
+
+<p>
+    Le trajet
+    <strong>{{ participation.trajet.villeDepart }} &rarr; {{ participation.trajet.villeArrivee }}</strong>
+    du {{ participation.trajet.dateDepart|date('d/m/Y à H:i') }},
+    auquel vous étiez inscrit(e), a été annulé par le conducteur.
+</p>
+
+<p>
+    Nous vous invitons à chercher un autre covoiturage sur la plateforme.
+</p>
+
+<p>À bientôt,<br>L'équipe ENI Covoiturage</p>
