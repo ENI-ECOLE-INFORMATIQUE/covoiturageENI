@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes véhicules — ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">Mes véhicules</h1>
+        <a href="{{ path('app_vehicule_nouveau') }}" class="btn btn-primary">Ajouter un véhicule</a>
+    </div>
+
+    {% if vehicules is empty %}
+        <div class="alert alert-info">
+            Aucun véhicule enregistré. Ajoutez-en un pour publier des trajets.
+        </div>
+    {% else %}
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Marque</th>
+                <th>Modèle</th>
+                <th>Couleur</th>
+                <th>Plaque</th>
+                <th>Places</th>
+                <th>Confort</th>
+                <th class="text-end">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for vehicule in vehicules %}
+                <tr>
+                    <td>{{ vehicule.marque }}</td>
+                    <td>{{ vehicule.modele }}</td>
+                    <td>{{ vehicule.couleur ?? '—' }}</td>
+                    <td>{{ vehicule.plaque }}</td>
+                    <td>{{ vehicule.nbPlaces }}</td>
+                    <td>
+                        {% if vehicule.fumeur %}<span class="badge bg-secondary">fumeur</span>{% endif %}
+                        {% if vehicule.animaux %}<span class="badge bg-secondary">animaux</span>{% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ path('app_vehicule_modifier', {'id': vehicule.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                        <form method="post" action="{{ path('app_vehicule_supprimer', {'id': vehicule.id}) }}" class="d-inline"
+                              onsubmit="return confirm('Supprimer ce véhicule ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('supprimer' ~ vehicule.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

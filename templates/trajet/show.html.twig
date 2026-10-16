@@ -1,0 +1,153 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trajet.villeDepart }} → {{ trajet.villeArrivee }} — ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h1 class="h3 mb-1">{{ trajet.villeDepart }} <span class="text-muted">&rarr;</span> {{ trajet.villeArrivee }}</h1>
+                        <span class="badge align-self-start bg-{{ trajet.statut.value == 'ouvert' ? 'success' : (trajet.statut.value == 'complet' ? 'warning' : (trajet.statut.value == 'annule' ? 'danger' : 'secondary')) }}">
+                            {{ trajet.statut.value }}
+                        </span>
+                    </div>
+                    <p class="text-muted">{{ trajet.sens.libelle }} &middot; campus {{ trajet.site.nom }}</p>
+
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Départ</dt>
+                        <dd class="col-sm-8">{{ trajet.dateDepart|date('d/m/Y à H:i') }}</dd>
+                        <dt class="col-sm-4">Ville de départ</dt>
+                        <dd class="col-sm-8">{{ trajet.villeDepart }}{% if trajet.adresseRendezVous %} — {{ trajet.adresseRendezVous }}{% endif %}</dd>
+                        <dt class="col-sm-4">Ville d'arrivée</dt>
+                        <dd class="col-sm-8">{{ trajet.villeArrivee }}</dd>
+                        {% if trajet.dureeEstimee %}
+                            <dt class="col-sm-4">Durée estimée</dt>
+                            <dd class="col-sm-8">{{ (trajet.dureeEstimee / 60)|number_format(1) }} h</dd>
+                        {% endif %}
+                        <dt class="col-sm-4">Places restantes</dt>
+                        <dd class="col-sm-8">{{ trajet.nbPlacesRestantes }} sur {{ trajet.nbPlacesOffertes }}</dd>
+                        <dt class="col-sm-4">Participation</dt>
+                        <dd class="col-sm-8">{{ trajet.prix|number_format(2, ',', ' ') }} € (réglée au conducteur)</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h2 class="h5">Conducteur</h2>
+                    <p class="mb-1"><strong>{{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}</strong> — {{ trajet.conducteur.statut.libelle }}</p>
+                    {% if trajet.vehicule %}
+                        <p class="mb-1 text-muted">
+                            Véhicule : {{ trajet.vehicule.marque }} {{ trajet.vehicule.modele }}
+                            {% if trajet.vehicule.couleur %}({{ trajet.vehicule.couleur }}){% endif %}
+                        </p>
+                        <p class="mb-0 text-muted">
+                            {% if trajet.vehicule.fumeur %}Conducteur fumeur{% else %}Non-fumeur{% endif %}
+                            &middot; {% if trajet.vehicule.animaux %}Animaux acceptés{% else %}Pas d'animaux{% endif %}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if trajet.commentaire %}
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="h5">Commentaire du conducteur</h2>
+                        <p class="mb-0">{{ trajet.commentaire|nl2br }}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-5">
+            {% if app.user and app.user.id == trajet.conducteur.id %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h2 class="h5">Actions conducteur</h2>
+                        {% if trajet.statut.value in ['ouvert', 'complet'] %}
+                            {% if trajet.statut.value == 'ouvert' %}
+                                <a href="{{ path('app_trajet_modifier', {'id': trajet.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                            {% endif %}
+                            <form method="post" action="{{ path('app_trajet_annuler', {'id': trajet.id}) }}" class="d-inline"
+                                  onsubmit="return confirm('Annuler ce trajet ? Les participants seront prévenus.');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('annuler' ~ trajet.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Annuler le trajet</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="h5">Participants</h2>
+                        {% if trajet.participations is empty %}
+                            <p class="text-muted mb-0">Aucune demande pour le moment.</p>
+                        {% else %}
+                            <table class="table table-sm align-middle">
+                                <tbody>
+                                {% for participation in trajet.participations %}
+                                    <tr>
+                                        <td>{{ participation.membre.prenom }} {{ participation.membre.nom }}</td>
+                                        <td>{{ participation.nbPlaces }} place(s)</td>
+                                        <td>
+                                            <span class="badge bg-{% if participation.statut.value == 'accepte' %}success{% elseif participation.statut.value == 'refuse' %}danger{% elseif participation.statut.value == 'annule' %}secondary{% else %}warning{% endif %}">
+                                                {{ participation.statut.value }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            {% if participation.statut.value == 'en_attente' %}
+                                                <form method="post" action="{{ path('app_participation_accepter', {'id': participation.id}) }}" class="d-inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('accepter' ~ participation.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-success">Accepter</button>
+                                                </form>
+                                                <form method="post" action="{{ path('app_participation_refuser', {'id': participation.id}) }}" class="d-inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('refuser' ~ participation.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Refuser</button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+            {% elseif peutReserver and formReservation %}
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="h5">Réserver</h2>
+                        {{ form_start(formReservation) }}
+                        {{ form_widget(formReservation) }}
+                        {{ form_end(formReservation) }}
+                    </div>
+                </div>
+            {% elseif maParticipation %}
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="h5">Ma participation</h2>
+                        <p class="mb-2">Statut :
+                            <span class="badge bg-{% if maParticipation.statut.value == 'accepte' %}success{% elseif maParticipation.statut.value == 'refuse' %}danger{% elseif maParticipation.statut.value == 'annule' %}secondary{% else %}warning{% endif %}">
+                                {{ maParticipation.statut.value }}
+                            </span>
+                        </p>
+                        {% if maParticipation.statut.value in ['en_attente', 'accepte'] %}
+                            <form method="post" action="{{ path('app_participation_annuler', {'id': maParticipation.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('annuler' ~ maParticipation.id) }}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Annuler ma participation</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% elseif app.user and trajet.statut.value == 'ouvert' and delaiDepasse %}
+                <div class="card"><div class="card-body text-muted">La réservation en ligne est fermée : le départ est imminent.</div></div>
+            {% elseif not app.user %}
+                <div class="card"><div class="card-body">
+                    <a href="{{ path('app_login') }}" class="btn btn-primary">Se connecter pour réserver</a>
+                </div></div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

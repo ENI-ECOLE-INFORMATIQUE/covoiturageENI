@@ -47,7 +47,23 @@ php bin/phpunit
 
 - M1 — Squelette, entités, migrations, auth + vérification email, campus
   initiaux : **terminé**
-- M2 — Trajets (CRUD, recherche, réservation)
+- M2 — Trajets (publication, recherche, réservation modérée, règles métier
+  1 à 5) : **terminé**
 - M3 — Avis, profils, notifications
 - M4 — Back-office, modération, statistiques
 - M5 — Durcissement, mise en production
+
+## M2 en bref
+
+- **Véhicules** : chaque membre gère ses véhicules (`/vehicules`) ; les places
+  offertes d'un trajet suivent le véhicule choisi.
+- **Recherche** sur la page d'accueil : campus, sens, date, ville libre —
+  seuls les trajets ouverts avec places libres apparaissent.
+- **Réservation modérée** : le passager demande, le conducteur accepte ou
+  refuse ; trajet complet automatiquement quand toutes les places sont
+  acceptées.
+- **Règles métier** : pas d'auto-réservation, capacité contrôlée à
+  l'acceptation, annulation du trajet = participations annulées, réservation
+  fermée 2 h avant le départ (paramètre `app.delai_reservation_heures`).
+- Comptes de démonstration (fixtures) : `camille.legoff@campus-eni.fr` et
+  `hugo.martin@campus-eni.fr` (`MotDePasse123`).

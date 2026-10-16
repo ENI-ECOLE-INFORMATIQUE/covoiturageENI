@@ -25,6 +25,10 @@ class Trajet
     private ?Membre $conducteur = null;
 
     #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'vehicule_id', nullable: true, onDelete: 'SET NULL')]
+    private ?Vehicule $vehicule = null;
+
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'site_id', nullable: false)]
     private ?Site $site = null;
 
@@ -88,6 +92,18 @@ class Trajet
     public function setConducteur(?Membre $conducteur): static
     {
         $this->conducteur = $conducteur;
+
+        return $this;
+    }
+
+    public function getVehicule(): ?Vehicule
+    {
+        return $this->vehicule;
+    }
+
+    public function setVehicule(?Vehicule $vehicule): static
+    {
+        $this->vehicule = $vehicule;
 
         return $this;
     }

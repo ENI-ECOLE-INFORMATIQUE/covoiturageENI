@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes trajets — ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <h1 class="h3 mb-4">Mes trajets</h1>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <h2 class="h5 mb-3">Conducteur</h2>
+            {% if trajetsConduits is empty %}
+                <div class="alert alert-info">Vous n'avez publié aucun trajet.
+                    <a href="{{ path('app_trajet_nouveau') }}">Publier un trajet</a>.
+                </div>
+            {% else %}
+                {% for trajet in trajetsConduits %}
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ trajet.villeDepart }} &rarr; {{ trajet.villeArrivee }}</strong>
+                                    <span class="text-muted"> &middot; {{ trajet.dateDepart|date('d/m/Y H:i') }}</span>
+                                    <span class="badge bg-{{ trajet.statut.value == 'ouvert' ? 'success' : (trajet.statut.value == 'complet' ? 'warning' : (trajet.statut.value == 'annule' ? 'danger' : 'secondary')) }}">{{ trajet.statut.value }}</span>
+                                </div>
+                                <a href="{{ path('app_trajet_show', {'id': trajet.id}) }}" class="btn btn-sm btn-outline-primary align-self-center">Gérer</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="col-lg-6">
+            <h2 class="h5 mb-3">Passager</h2>
+            {% if mesParticipations is empty %}
+                <div class="alert alert-info">Aucune réservation de votre part.</div>
+            {% else %}
+                {% for participation in mesParticipations %}
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ participation.trajet.villeDepart }} &rarr; {{ participation.trajet.villeArrivee }}</strong>
+                                    <span class="text-muted"> &middot; {{ participation.trajet.dateDepart|date('d/m/Y H:i') }}</span>
+                                    <span class="badge bg-{% if participation.statut.value == 'accepte' %}success{% elseif participation.statut.value == 'refuse' %}danger{% elseif participation.statut.value == 'annule' %}secondary{% else %}warning{% endif %}">{{ participation.statut.value }}</span>
+                                </div>
+                                <a href="{{ path('app_trajet_show', {'id': participation.trajet.id}) }}" class="btn btn-sm btn-outline-primary align-self-center">Voir</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -28,6 +28,11 @@ security:
     # Note: Only the *first* matching rule is applied
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/vehicule, roles: ROLE_USER }
+        - { path: ^/trajet/nouveau, roles: ROLE_USER }
+        - { path: ^/trajet/\d+/(modifier|annuler|reserver), roles: ROLE_USER }
+        - { path: ^/participation, roles: ROLE_USER }
+        - { path: ^/mes-trajets, roles: ROLE_USER }
 
 when@test:
     security:
