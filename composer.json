@@ -81,6 +81,17 @@
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
             "importmap:install": "symfony-cmd"
         },
+        "test": [
+            "phpunit"
+        ],
+        "stan": [
+            "phpstan analyse --no-progress"
+        ],
+        "lint": [
+            "php bin/console lint:container",
+            "php bin/console lint:twig templates",
+            "php bin/console lint:yaml config --parse-tags"
+        ],
         "post-install-cmd": [
             "@auto-scripts"
         ],
@@ -99,6 +110,9 @@
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^4.3",
+        "phpstan/phpstan": "^2.3",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-doctrine": "^2.0",
         "phpunit/phpunit": "^12.5",
         "symfony/browser-kit": "7.4.*",
         "symfony/css-selector": "7.4.*",

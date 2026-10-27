@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Entity\Membre;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
@@ -40,8 +41,8 @@ final class EmailVerifier
     /**
      * @throws VerifyEmailExceptionInterface si le lien est invalide ou expiré
      */
-    public function handleEmailConfirmation(Membre $membre, string $uriSignee): void
+    public function handleEmailConfirmation(Membre $membre, Request $request): void
     {
-        $this->verifyEmailHelper->validateEmailConfirmation($uriSignee, (string) $membre->getId(), $membre->getEmail());
+        $this->verifyEmailHelper->validateEmailConfirmationFromRequest($request, (string) $membre->getId(), $membre->getEmail());
     }
 }

@@ -77,20 +77,6 @@ final class TrajetTest extends WebTestCase
         return $trajet;
     }
 
-    private static function participer(KernelBrowser $client, Trajet $trajet, Membre $membre, int $nbPlaces = 1): Participation
-    {
-        $participation = new Participation();
-        $participation->setTrajet($trajet);
-        $participation->setMembre($membre);
-        $participation->setNbPlaces($nbPlaces);
-        $participation->setStatut(StatutParticipation::EnAttente);
-
-        self::em($client)->persist($participation);
-        self::em($client)->flush();
-
-        return $participation;
-    }
-
     private static function participationRepository(KernelBrowser $client): ParticipationRepository
     {
         return $client->getContainer()->get(ParticipationRepository::class);

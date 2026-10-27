@@ -7,14 +7,17 @@ use App\Repository\MembreRepository;
 use App\Repository\SiteRepository;
 use App\Tests\DatabasePrimerTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\BrowserKit\AbstractBrowser;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 
 final class InscriptionTest extends WebTestCase
 {
     use DatabasePrimerTrait;
 
-    private static function donneesValides(AbstractBrowser $client): array
+    /**
+     * @return array<string, mixed>
+     */
+    private static function donneesValides(KernelBrowser $client): array
     {
         $site = $client->getContainer()->get(SiteRepository::class)->findOneBy(['actif' => true]);
 
@@ -30,7 +33,10 @@ final class InscriptionTest extends WebTestCase
         ];
     }
 
-    private static function inscrire(AbstractBrowser $client, array $donnees): void
+    /**
+     * @param array<string, mixed> $donnees
+     */
+    private static function inscrire(KernelBrowser $client, array $donnees): void
     {
         $crawler = $client->request('GET', '/inscription');
         $form = $crawler->selectButton('registration_form[submit]')->form($donnees);

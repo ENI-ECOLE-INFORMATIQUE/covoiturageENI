@@ -137,8 +137,10 @@ final class AdminTest extends WebTestCase
         $cibleRafraichie = $client->getContainer()->get(MembreRepository::class)->find($cible->getId());
         $this->assertFalse($cibleRafraichie->isActif(), 'Le compte doit être désactivé.');
 
-        // L'admin se déconnecte pour tester la connexion du membre désactivé.
-        $client->request('GET', '/deconnexion');
+        // L'admin se déconnecte (lien avec jeton CSRF de logout) pour tester
+        // la connexion du membre désactivé.
+        $client->followRedirect();
+        $client->click($client->getCrawler()->selectLink('Déconnexion')->link());
 
         $client->request('GET', '/connexion');
         $form = $client->getCrawler()->selectButton('Se connecter')->form([

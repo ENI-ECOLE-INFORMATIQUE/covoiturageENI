@@ -50,6 +50,7 @@ class Membre implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'email_verifie_le', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $emailVerifieLe = null;
 
+    /** @var array<int, string> */
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
@@ -181,6 +182,9 @@ class Membre implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
+    /**
+     * @param array<int, string> $roles
+     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;

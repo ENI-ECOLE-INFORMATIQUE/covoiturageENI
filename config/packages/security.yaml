@@ -24,6 +24,7 @@ security:
                 max_attempts: 5
             logout:
                 path: app_logout
+                enable_csrf: true
 
     # Note: Only the *first* matching rule is applied
     access_control:

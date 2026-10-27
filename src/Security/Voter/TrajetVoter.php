@@ -10,6 +10,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 /**
  * Seul le conducteur peut modifier, annuler ou gérer les participations
  * de son trajet.
+ *
+ * @extends Voter<string, Trajet>
  */
 final class TrajetVoter extends Voter
 {
@@ -29,8 +31,6 @@ final class TrajetVoter extends Voter
         if (!$membre instanceof Membre) {
             return false;
         }
-
-        \assert($subject instanceof Trajet);
 
         return $subject->getConducteur() !== null
             && $subject->getConducteur()->getId() === $membre->getId();

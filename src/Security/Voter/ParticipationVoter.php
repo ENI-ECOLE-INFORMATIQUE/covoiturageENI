@@ -10,6 +10,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 /**
  * Le passager annule sa propre participation ; le conducteur du trajet
  * accepte, refuse ou annule les participations.
+ *
+ * @extends Voter<string, Participation>
  */
 final class ParticipationVoter extends Voter
 {
@@ -29,8 +31,6 @@ final class ParticipationVoter extends Voter
         if (!$membre instanceof Membre) {
             return false;
         }
-
-        \assert($subject instanceof Participation);
 
         $passager = $subject->getMembre();
         $conducteur = $subject->getTrajet()?->getConducteur();

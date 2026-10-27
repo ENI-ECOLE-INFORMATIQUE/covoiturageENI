@@ -97,7 +97,7 @@ final class SecurityController extends AbstractController
         }
 
         try {
-            $this->emailVerifier->handleEmailConfirmation($membre, $request->getUri());
+            $this->emailVerifier->handleEmailConfirmation($membre, $request);
         } catch (VerifyEmailExceptionInterface) {
             $this->addFlash('danger', 'Le lien de vérification est invalide ou a expiré.');
 

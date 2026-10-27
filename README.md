@@ -51,7 +51,27 @@ php bin/phpunit
   1 à 5) : **terminé**
 - M3 — Avis, profils, notifications : **terminé**
 - M4 — Back-office, modération, statistiques : **terminé**
-- M5 — Durcissement, mise en production
+- M5 — Durcissement, préparation production : **terminé**
+  (mise en ligne : suivre [docs/deploiement.md](docs/deploiement.md))
+
+## Qualité et scripts Composer
+
+```bash
+composer test   # PHPUnit (SQLite, 26 tests)
+composer stan   # PHPStan niveau 6 (src/ + tests/)
+composer lint   # lint:container, lint:twig, lint:yaml
+```
+
+## M5 en bref
+
+- **Durcissement** : cookies `Secure`/`HttpOnly`/`SameSite=Lax`, déconnexion
+  protégée par CSRF, pages d'erreur personnalisées (403/404/générique).
+- **PHPStan niveau 6** (avec extension Doctrine) : zéro erreur sur `src/`
+  et `tests/` ; méthode dépréciée de verify-email remplacée.
+- **Lint complet** : container, Twig, YAML ; cache prod compilé et vérifié.
+- **Déploiement documenté** : [docs/deploiement.md](docs/deploiement.md)
+  (checklist hébergeur, dump-env, premier admin, file Messenger via cron,
+  checklist sécurité).
 
 ## M4 en bref
 

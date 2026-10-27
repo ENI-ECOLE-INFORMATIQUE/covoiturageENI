@@ -1,0 +1,14 @@
+# Config PHPStan — analyse de src/ et tests/ au niveau 6.
+includes:
+    - vendor/phpstan/phpstan-doctrine/extension.neon
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+
+parameters:
+    level: 6
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - var
+    doctrine:
+        objectManagerLoader: tests/phpstan-doctrine-loader.php

@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Erreur — ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h1 class="display-1 fw-bold">{{ status_code }}</h1>
+            <p class="fs-4 text-muted">
+                {% if status_code == 403 %}
+                    Vous n'avez pas accès à cette page.
+                {% elseif status_code == 404 %}
+                    Cette page n'existe pas ou plus.
+                {% else %}
+                    Une erreur inattendue est survenue. Réessayez dans un instant.
+                {% endif %}
+            </p>
+            <a href="{{ path('app_home') }}" class="btn btn-primary">Retour à l'accueil</a>
+        </div>
+    </div>
+{% endblock %}

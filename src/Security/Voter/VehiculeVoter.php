@@ -9,6 +9,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
  * Seul le propriétaire modifie ou supprime son véhicule.
+ *
+ * @extends Voter<string, Vehicule>
  */
 final class VehiculeVoter extends Voter
 {
@@ -27,8 +29,6 @@ final class VehiculeVoter extends Voter
         if (!$membre instanceof Membre) {
             return false;
         }
-
-        \assert($subject instanceof Vehicule);
 
         return $subject->getMembre() !== null
             && $subject->getMembre()->getId() === $membre->getId();
