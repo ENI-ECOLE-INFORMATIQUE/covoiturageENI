@@ -9,7 +9,10 @@
     <body class="bg-body-tertiary">
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
             <div class="container">
-                <a class="navbar-brand" href="{{ path('app_home') }}">ENI Covoiturage</a>
+                <a class="navbar-brand d-flex align-items-center gap-2" href="{{ path('app_home') }}">
+                    <img src="{{ asset('img/logo_eni.png') }}" alt="Logo ENI" height="32">
+                    ENI Covoiturage
+                </a>
                 <div class="navbar-nav ms-auto align-items-lg-center">
                     {% if app.user %}
                         {% if is_granted('ROLE_ADMIN') %}
