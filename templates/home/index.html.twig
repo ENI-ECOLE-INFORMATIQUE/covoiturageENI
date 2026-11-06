@@ -67,7 +67,7 @@
     <h2 class="h4 mb-3">Nos campus</h2>
     <div class="row g-3 mb-4">
         {% for c in campus %}
-            <div class="col-md-4">
+            <div class="col-md-4 campus-col">
                 <div class="card h-100 shadow-sm">
                     <img src="{{ asset(c.image) }}" class="card-img-top" alt="{{ c.site.nom }}"
                          style="height: 140px; object-fit: cover;">
@@ -122,4 +122,99 @@
             {% endfor %}
         </div>
     {% endif %}
+
+    {# Carte interactive OpenStreetMap des trajets #}
+    <h2 class="h4 mb-3">Carte des trajets</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-2 align-items-end mb-3">
+                <div class="col-md-4">
+                    <label for="filtre-campus-carte" class="form-label">Filtrer par campus</label>
+                    <select id="filtre-campus-carte" class="form-select">
+                        <option value="">Tous les campus</option>
+                        {% for c in campus %}
+                            <option value="{{ c.site.id }}">{{ c.site.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div id="carte-trajets" class="rounded-3 border" style="height: 420px;"></div>
+            <p class="text-muted small mt-2 mb-0">
+                Carte © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> — géocodage Nominatim.
+            </p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        (function () {
+            const TRAJETS = {{ trajetsCarteJson|raw }};
+            const map = L.map('carte-trajets').setView([46.7, 2.5], 6);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            // Géocodage des villes via Nominatim (avec cache pour éviter les doublons).
+            const cache = {};
+            async function geocode(ville) {
+                if (cache[ville] !== undefined) { return cache[ville]; }
+                try {
+                    const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='
+                        + encodeURIComponent(ville + ', France'));
+                    const data = await res.json();
+                    cache[ville] = data.length ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
+                } catch (e) {
+                    cache[ville] = null;
+                }
+                return cache[ville];
+            }
+
+            let couches = [];
+
+            function popup(t, point) {
+                return t.villeDepart + ' &rarr; ' + t.villeArrivee + '<br>'
+                    + t.dateDepart + ' &middot; ' + t.sens + '<br>'
+                    + '<strong>' + t.places + '</strong> place(s) &middot; ' + t.prix + ' &euro;<br>'
+                    + t.siteNom + '<br><a href="' + t.url + '">Voir le trajet</a>';
+            }
+
+            async function afficher() {
+                const filtre = document.getElementById('filtre-campus-carte').value;
+                for (const c of couches) { map.removeLayer(c.layer); }
+                couches = [];
+
+                await Promise.all(TRAJETS.map(async (t) => {
+                    t._depart = await geocode(t.villeDepart);
+                    t._arrivee = await geocode(t.villeArrivee);
+                }));
+
+                const points = [];
+                for (const t of TRAJETS) {
+                    if (filtre && String(t.siteId) !== filtre) { continue; }
+                    if (!t._depart || !t._arrivee) { continue; }
+                    const layer = L.layerGroup();
+                    L.polyline([t._depart, t._arrivee], {color: '#0d6efd', weight: 4, dashArray: '6 6'})
+                        .bindPopup(popup(t)).addTo(layer);
+                    L.circleMarker(t._depart, {radius: 6, color: '#198754', fillColor: '#198754', fillOpacity: 0.9})
+                        .bindPopup(popup(t)).addTo(layer);
+                    L.circleMarker(t._arrivee, {radius: 6, color: '#dc3545', fillColor: '#dc3545', fillOpacity: 0.9})
+                        .bindPopup(popup(t)).addTo(layer);
+                    layer.addTo(map);
+                    couches.push({siteId: t.siteId, layer: layer});
+                    points.push(t._depart, t._arrivee);
+                }
+
+                if (points.length) {
+                    map.fitBounds(L.latLngBounds(points).pad(0.2));
+                }
+            }
+
+            document.getElementById('filtre-campus-carte').addEventListener('change', afficher);
+            afficher();
+        })();
+    </script>
 {% endblock %}

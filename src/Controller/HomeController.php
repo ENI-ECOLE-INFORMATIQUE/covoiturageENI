@@ -46,7 +46,32 @@ final class HomeController extends AbstractController
             'formRecherche' => $form,
             'trajets' => $trajets,
             'campus' => $this->campusActifs(),
+            'trajetsCarteJson' => $this->trajetsPourCarte($trajets),
         ]);
+    }
+
+    /**
+     * Données JSON des trajets pour la carte OpenStreetMap (accueil).
+     *
+     * @param Trajet[] $trajets
+     */
+    private function trajetsPourCarte(array $trajets): string
+    {
+        $data = \array_map(fn (Trajet $trajet): array => [
+            'id' => $trajet->getId(),
+            'villeDepart' => (string) $trajet->getVilleDepart(),
+            'villeArrivee' => (string) $trajet->getVilleArrivee(),
+            'dateDepart' => $trajet->getDateDepart()?->format('d/m/Y à H:i'),
+            'prix' => (string) $trajet->getPrix(),
+            'places' => $trajet->getNbPlacesRestantes(),
+            'sens' => $trajet->getSens()?->libelle(),
+            'siteId' => $trajet->getSite()?->getId(),
+            'siteNom' => (string) $trajet->getSite()?->getNom(),
+            'url' => $this->generateUrl('app_trajet_show', ['id' => $trajet->getId()]),
+        ], $trajets);
+
+        // Flags hex : le JSON peut être injecté sans risque dans un <script>.
+        return (string) \json_encode($data, \JSON_HEX_TAG | \JSON_HEX_APOS | \JSON_HEX_AMP | \JSON_HEX_QUOT);
     }
 
     /**

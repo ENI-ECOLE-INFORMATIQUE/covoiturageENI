@@ -39,8 +39,11 @@ final class HomeTest extends WebTestCase
         $images = $crawler->filter('img.card-img-top');
         $this->assertCount(\count($sites), $images, 'Une image par campus actif.');
         // Maximum 3 campus par ligne : chaque carte occupe col-md-4.
-        $colonnes = $crawler->filter('img.card-img-top')->ancestors()->filter('.col-md-4');
-        $this->assertCount(\count($sites), $colonnes, 'Chaque carte campus doit être en col-md-4 (max 3 par ligne).');
+        $colonnes = $crawler->filter('.campus-col');
+        $this->assertCount(\count($sites), $colonnes, 'Chaque carte campus doit avoir sa propre colonne.');
+        foreach ($colonnes->each(static fn ($n) => (string) $n->attr('class')) as $class) {
+            $this->assertStringContainsString('col-md-4', $class, 'Max 3 campus par ligne.');
+        }
         $srcs = \implode(' ', $images->each(static fn ($n) => (string) $n->attr('src')));
         $this->assertStringContainsString('poster_thumb_batiment-rennes', $srcs);
         $this->assertStringContainsString('poster_thumb_facade-nantes-franklin', $srcs);
@@ -86,5 +89,35 @@ final class HomeTest extends WebTestCase
         $siteNantes = $client->getContainer()->get(SiteRepository::class)->findOneBy(['nom' => 'ENI Nantes']);
         $client->request('GET', '/?trajet_search%5Bsite%5D='.$siteNantes->getId());
         $this->assertSelectorTextContains('body', 'Aucun trajet');
+    }
+
+    /**
+     * Carte interactive OpenStreetMap sous « Trajets disponibles » :
+     * conteneur Leaflet, filtre par campus, données des trajets injectées.
+     */
+    public function testCarteOpenStreetMapDesTrajets(): void
+    {
+        $client = static::createClient();
+        self::preparerBase($client->getContainer());
+
+        $crawler = $client->request('GET', '/');
+        $this->assertResponseIsSuccessful();
+
+        // Conteneur de la carte
+        $this->assertCount(1, $crawler->filter('#carte-trajets'), 'Le conteneur de la carte doit exister.');
+
+        // Filtre par campus : « Tous les campus » + un option par campus actif
+        $sites = $client->getContainer()->get(SiteRepository::class)->findBy(['actif' => true]);
+        $options = $crawler->filter('#filtre-campus-carte option');
+        $this->assertCount(\count($sites) + 1, $options);
+        $this->assertSame('Tous les campus', trim($options->first()->text()));
+
+        // Leaflet + tuiles OSM chargés, données des trajets injectées en JSON
+        $html = (string) $client->getResponse()->getContent();
+        $this->assertStringContainsString('unpkg.com/leaflet', $html);
+        $this->assertStringContainsString('tile.openstreetmap.org', $html);
+        $this->assertMatchesRegularExpression('/const TRAJETS = \[/', $html);
+        $this->assertStringContainsString('villeDepart', $html);
+        $this->assertStringContainsString('Vannes', $html); // trajets de démo
     }
 }
