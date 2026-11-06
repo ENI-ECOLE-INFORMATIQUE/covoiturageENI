@@ -1,123 +1,126 @@
 # ENI Covoiturage
 
 Plateforme de covoiturage réservée à la communauté ENI (étudiants, formateurs,
-personnel), pour les trajets vers les campus de Quimper, Rennes, Nantes et CEL.
+personnel), pour les trajets vers les campus de **Quimper, Rennes, Nantes,
+Niort** et le **campus en ligne (CEL)**.
 
 Spécification technique : [docs/specification-technique.md](docs/specification-technique.md).
+Déploiement : [docs/deploiement.md](docs/deploiement.md).
 
 ## Stack
 
 - PHP 8.2+ / Symfony 7.4 (LTS)
 - MySQL 8 (WAMP64 en local) via Doctrine ORM + migrations
-- Twig + Bootstrap 5
-- PHPUnit (tests fonctionnels sur SQLite)
+- Twig + Bootstrap 5 (CDN), assets servis par **AssetMapper** (`assets/` → `/assets/`, URLs fingerprintées)
+- Carte interactive **Leaflet + OpenStreetMap** (tuiles OSM, géocodage Nominatim côté navigateur)
+- Emails asynchrones via Messenger (transport Doctrine), Mailer
+- PHPUnit (tests fonctionnels sur SQLite) + PHPStan niveau 6
 
 ## Démarrage en local (WAMP64)
 
 ```bash
 composer install
 # Base de données : adapter DATABASE_URL dans .env.local si besoin
+# (par défaut : mysql://root:@127.0.0.1:3306/covoiturage_eni)
 bin/console doctrine:database:create
 bin/console doctrine:migrations:migrate
 bin/console doctrine:fixtures:load
+php -S 127.0.0.1:8000 -t public   # ou symfony serve
 ```
 
 L'envoi d'emails est neutralisé en local (`MAILER_DSN=null://null`) : les
 messages de vérification sont consultables dans le profiler (barre de debug,
-onglet Emails). Pour un envoi réel, configurer Mailtrap dans `.env.local`.
+onglet Emails). Pour un envoi réel, configurer Mailtrap dans `.env.local` puis
+`bin/console messenger:consume async`.
 
-Compte administrateur issu des fixtures : `admin@campus-eni.fr` / `admin1234`.
+Comptes issus des fixtures :
 
-## Tests
+- admin : `admin@campus-eni.fr` / `admin1234`
+- démo : `camille.legoff@campus-eni.fr` et `hugo.martin@campus-eni.fr` (`MotDePasse123`)
+
+## Fonctionnalités
+
+### Accueil (`/`)
+
+- Hero de bienvenue (bannière `assets/img/banner-ecologique_conviviale.jpg`), logo ENI dans le header.
+- 4 avantages (économique, écologique, convivial, pratique).
+- **Nos campus** : cartes (max 3 par ligne) avec photo, adresse, et boutons
+  **Détails** → `/campus/{id}` et **Covoiturer** → recherche préfiltrée sur le campus.
+- **Page campus** `/campus/{id}` : photo, adresse, site web, présentation
+  (champ `description` du campus), annonces de covoiturage du campus.
+- **Recherche de trajets** : campus, sens, date, ville.
+- **Carte interactive OpenStreetMap** sous les trajets : chaque trajet est tracé
+  entre sa ville de départ et d'arrivée (géocodage Nominatim), avec popup
+  (date, sens, places, prix, lien) et **filtre par campus**.
+- Liste des trajets disponibles (ouverts, à venir, avec places libres).
+
+### Trajets
+
+- Publication (`/trajet/nouveau`) réservée aux membres avec véhicule ; les places
+  offertes suivent le véhicule choisi. Campus obligatoire (champ `site` non null).
+- Recherche multicampus, réservation modérée (demande → acceptation/refus),
+  trajet « complet » automatique, annulation avec notification des participants.
+- Règles métier : pas d'auto-réservation, capacité contrôlée à l'acceptation,
+  annulation du trajet = participations annulées + emails, réservation fermée
+  `app.delai_reservation_heures` (2 h) avant le départ, avis possible
+  `app.delai_avis_heures` (1 h) après le départ (règle 6).
+
+### Membres, avis, profils
+
+- Inscription restreinte aux adresses `@campus-eni.fr` (`App\Validator\CampusEniEmail`),
+  connexion refusée tant que l'email n'est pas vérifié (`MembreUserChecker`).
+- Chaque membre est rattaché à un campus ; véhicules personnels (`/vehicules`).
+- Avis 1–5 + commentaire, un par participation acceptée, passager ↔ conducteur.
+- Profils publics `/membre/{id}` : statut, campus, moyenne des notes, avis reçus,
+  prochains trajets.
+- Notifications email asynchrones (nouvelle demande, acceptation, refus,
+  annulation) via Messenger.
+
+### Back-office admin (`/admin`, ROLE_ADMIN)
+
+- Dashboard statistiques (membres, campus, trajets, réservations acceptées,
+  note moyenne, trajets ouverts à venir par campus).
+- Campus : créer/modifier (nom, adresse, ville, CP, site web, présentation),
+  activer/désactiver (un campus inactif disparaît des recherches, de
+  l'inscription et de l'accueil).
+- Membres : activer/désactiver un compte. Avis : consultation et suppression.
+
+## Routes principales
+
+| Route | Description |
+| --- | --- |
+| `/` | Accueil : hero, campus, recherche, carte OSM, trajets |
+| `/campus/{id}` | Page détail d'un campus + ses annonces |
+| `/trajet/nouveau`, `/trajet/{id}`, `/trajet/{id}/modifier`, `/trajet/{id}/annuler` | Trajets |
+| `/trajet/{id}/reserver`, `/participation/{id}/accepter|refuser|annuler` | Réservations |
+| `/participation/{id}/avis` | Avis |
+| `/mes-trajets` | Mes trajets conduits + participations |
+| `/vehicules`, `/vehicule/nouveau`, … | Mes véhicules |
+| `/membre/{id}` | Profil public |
+| `/inscription`, `/connexion`, `/verification-email` | Auth + vérification email |
+| `/admin` | Back-office (dashboard, campus, membres, avis) |
+
+## Images
+
+`assets/img/` : `logo_eni.png` (header), `banner-ecologique_conviviale.jpg`
+(hero + repli campus), `poster_thumb_*.jpg` (cartes campus, choisies selon le
+nom du site via `App\Service\ImageCampus`).
+
+## Tests et qualité
 
 ```bash
-php bin/phpunit
-```
-
-## Règles métier clés
-
-- Inscription restreinte aux adresses `@campus-eni.fr` (contrainte de
-  validation dédiée, `App\Validator\CampusEniEmail`).
-- Connexion refusée tant que l'adresse email n'est pas vérifiée
-  (`App\Security\MembreUserChecker`).
-- Chaque membre est rattaché à un campus ; la liste des campus est éditable
-  (back-office prévu au jalon M4).
-
-## Jalons
-
-- M1 — Squelette, entités, migrations, auth + vérification email, campus
-  initiaux : **terminé**
-- M2 — Trajets (publication, recherche, réservation modérée, règles métier
-  1 à 5) : **terminé**
-- M3 — Avis, profils, notifications : **terminé**
-- M4 — Back-office, modération, statistiques : **terminé**
-- M5 — Durcissement, préparation production : **terminé**
-  (mise en ligne : suivre [docs/deploiement.md](docs/deploiement.md))
-
-## Qualité et scripts Composer
-
-```bash
-composer test   # PHPUnit (SQLite, 26 tests)
-composer stan   # PHPStan niveau 6 (src/ + tests/)
+composer test   # PHPUnit (SQLite en mémoire fichier, 35 tests fonctionnels)
+composer stan   # PHPStan niveau 6 (src/ + tests/, extension Doctrine)
 composer lint   # lint:container, lint:twig, lint:yaml
 ```
 
-## M5 en bref
+## Jalons
 
-- **Durcissement** : cookies `Secure`/`HttpOnly`/`SameSite=Lax`, déconnexion
-  protégée par CSRF, pages d'erreur personnalisées (403/404/générique).
-- **PHPStan niveau 6** (avec extension Doctrine) : zéro erreur sur `src/`
-  et `tests/` ; méthode dépréciée de verify-email remplacée.
-- **Lint complet** : container, Twig, YAML ; cache prod compilé et vérifié.
-- **Déploiement documenté** : [docs/deploiement.md](docs/deploiement.md)
-  (checklist hébergeur, dump-env, premier admin, file Messenger via cron,
-  checklist sécurité).
-
-## M4 en bref
-
-- **Administration** sous `/admin` (ROLE_ADMIN, lien de navigation dédié).
-- **Statistiques** : membres, campus, trajets, réservations acceptées,
-  note moyenne, trajets ouverts à venir par campus.
-- **Campus** : créer, modifier, activer/désactiver (un campus désactivé
-  disparaît des recherches et de l'inscription).
-- **Membres** : désactiver/réactiver un compte (garde anti-auto-désactivation ;
-  un compte désactivé ne peut plus se connecter).
-- **Avis** : consultation et suppression (modération).
-
-## M3 en bref
-
-- **Avis (règle métier 6)** : un avis par participation acceptée, 1 h après
-  le départ, note 1 à 5 + commentaire ; le passager note le conducteur et
-  inversement (premier à laisser son avis).
-- **Profils publics** (`/membre/{id}`) : statut, campus, moyenne des notes,
-  avis reçus, prochains trajets proposés.
-- **Notifications email asynchrones** (Messenger, transport Doctrine) :
-  nouvelle demande, acceptation, refus, annulation de trajet. Les messages
-  attendent dans la table `messenger_messages`.
-
-### Envoyer réellement les emails
-
-```bash
-# 1. Configurer MAILER_DSN dans .env.local (ex. Mailtrap)
-#    MAILER_DSN="smtp://utilisateur:motdepasse@sandbox.smtp.mailtrap.io:2525"
-# 2. Lancer le consommateur (dans un terminal dédié) :
-bin/console messenger:consume async
-```
-
-Sans consommateur, les messages restent en file (aucune perte) ; les
-échecs partent dans la file `failed` (transport `failed`).
-
-## M2 en bref
-
-- **Véhicules** : chaque membre gère ses véhicules (`/vehicules`) ; les places
-  offertes d'un trajet suivent le véhicule choisi.
-- **Recherche** sur la page d'accueil : campus, sens, date, ville libre —
-  seuls les trajets ouverts avec places libres apparaissent.
-- **Réservation modérée** : le passager demande, le conducteur accepte ou
-  refuse ; trajet complet automatiquement quand toutes les places sont
-  acceptées.
-- **Règles métier** : pas d'auto-réservation, capacité contrôlée à
-  l'acceptation, annulation du trajet = participations annulées, réservation
-  fermée 2 h avant le départ (paramètre `app.delai_reservation_heures`).
-- Comptes de démonstration (fixtures) : `camille.legoff@campus-eni.fr` et
-  `hugo.martin@campus-eni.fr` (`MotDePasse123`).
+- M1 — Squelette, entités, migrations, auth + vérification email : **terminé**
+- M2 — Trajets (publication, recherche, réservation modérée, règles 1 à 5) : **terminé**
+- M3 — Avis (règle 6), profils publics, notifications email asynchrones : **terminé**
+- M4 — Back-office admin (campus, membres, avis, statistiques) : **terminé**
+- M5 — Durcissement, PHPStan 6, préparation production : **terminé**
+- Itération UI — Accueil façon landing ENI (hero, avantages, cartes campus 3/ligne,
+  page campus `/campus/{id}`, logo ENI, campus de Niort, carte Leaflet/OSM avec
+  filtre campus) : **terminé**
