@@ -404,4 +404,77 @@ final class TrajetTest extends WebTestCase
 
         $this->assertResponseRedirects('/vehicule/nouveau');
     }
+
+    /**
+     * Un trajet publié sans campus choisi ne doit pas provoquer d'erreur SQL
+     * (site_id NOT NULL) : le formulaire est re-rendu avec une erreur.
+     */
+    public function testPublicationSansCampusEstRefuseeSansErreurSql(): void
+    {
+        $client = static::createClient();
+        self::preparerBase($client->getContainer());
+        $conducteur = self::creerMembre($client, 'conducteur@campus-eni.fr');
+        $client->loginUser($conducteur);
+
+        $crawler = $client->request('GET', '/vehicule/nouveau');
+        $form = $crawler->selectButton('Enregistrer le véhicule')->form([
+            'vehicule[marque]' => 'Peugeot',
+            'vehicule[modele]' => '208',
+            'vehicule[plaque]' => 'AB-123-CD',
+            'vehicule[nbPlaces]' => '3',
+        ]);
+        $client->submit($form);
+
+        $crawler = $client->request('GET', '/trajet/nouveau');
+        $vehicule = self::em($client)->getRepository(Vehicule::class)->findOneBy(['membre' => $conducteur]);
+
+        $form = $crawler->selectButton('Publier le trajet')->form([
+            'trajet[vehicule]' => $vehicule->getId(),
+            // 'trajet[site]' volontairement absent : campus non choisi.
+            'trajet[sens]' => 'vers_site',
+            'trajet[villeDepart]' => 'Auray',
+            'trajet[villeArrivee]' => 'Rennes',
+            'trajet[dateDepart]' => (new \DateTimeImmutable('+2 days'))->format('Y-m-d\TH:00'),
+            'trajet[prix]' => '6.50',
+        ]);
+        $client->submit($form);
+
+        // Plus d'erreur SQL (site_id NOT NULL) : le formulaire invalide est
+        // re-rendu avec une erreur de validation et un statut 422.
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSelectorTextContains('body', 'Le campus concerné est obligatoire.');
+        $this->assertNull($client->getContainer()->get(TrajetRepository::class)->findOneBy(['villeDepart' => 'Auray']));
+    }
+
+    /**
+     * Régression : le campus de rattachement du conducteur est déjà en map
+     * d'identité (proxy lazy non initialisé) quand la liste des campus est
+     * chargée. Son <option> doit quand même avoir une value non vide, sinon
+     * le navigateur soumet "" et le site arrive à null (erreur SQL site_id).
+     */
+    public function testLeCampusDuConducteurEstRenduAvecUneValeurNonVide(): void
+    {
+        $client = static::createClient();
+        self::preparerBase($client->getContainer());
+        $conducteur = self::creerMembre($client, 'conducteur@campus-eni.fr');
+        $campusId = $conducteur->getCampusRattachement()->getId();
+        $campusNom = $conducteur->getCampusRattachement()->getNom();
+
+        $vehicule = new Vehicule();
+        $vehicule->setMembre($conducteur);
+        $vehicule->setMarque('Renault');
+        $vehicule->setModele('Clio');
+        $vehicule->setPlaque('ZZ-987-WV');
+        $vehicule->setNbPlaces(3);
+        self::em($client)->persist($vehicule);
+        self::em($client)->flush();
+
+        $client->loginUser($conducteur);
+        $crawler = $client->request('GET', '/trajet/nouveau');
+
+        $this->assertResponseIsSuccessful();
+        $option = $crawler->filter(sprintf('#trajet_site option[value="%d"]', $campusId));
+        $this->assertCount(1, $option, 'Chaque campus doit être rendu avec une value non vide.');
+        $this->assertSame($campusNom, trim($option->text()));
+    }
 }

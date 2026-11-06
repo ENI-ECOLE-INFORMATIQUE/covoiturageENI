@@ -37,6 +37,9 @@ final class TrajetType extends AbstractType
         $builder
             ->add('vehicule', EntityType::class, [
                 'class' => Vehicule::class,
+                // choice_value explicite : la valeur par défaut passe par un accessor
+                // "raw" qui lit null sur un proxy lazy non initialisé (PHP 8.4).
+                'choice_value' => 'id',
                 'choice_label' => function (Vehicule $vehicule): string {
                     return \sprintf('%s %s (%d places)', $vehicule->getMarque(), $vehicule->getModele(), $vehicule->getNbPlaces());
                 },
@@ -47,9 +50,13 @@ final class TrajetType extends AbstractType
                     ->orderBy('v.marque', 'ASC'),
                 'label' => 'Véhicule utilisé',
                 'placeholder' => 'Choisir un véhicule',
+                'constraints' => [new NotBlank(message: 'Le véhicule est obligatoire.')],
             ])
             ->add('site', EntityType::class, [
                 'class' => Site::class,
+                // choice_value explicite : sinon le campus déjà chargé comme proxy lazy
+                // (ex. campus de rattachement du conducteur) rend une option value="".
+                'choice_value' => 'id',
                 'choice_label' => 'nom',
                 'query_builder' => static fn (SiteRepository $repository) => $repository
                     ->createQueryBuilder('s')

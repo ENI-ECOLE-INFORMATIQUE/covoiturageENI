@@ -24,6 +24,8 @@ final class TrajetSearchType extends AbstractType
         $builder
             ->add('site', EntityType::class, [
                 'class' => Site::class,
+                // choice_value explicite : un proxy lazy non initialisé rendrait value="".
+                'choice_value' => 'id',
                 'choice_label' => 'nom',
                 'query_builder' => static fn (SiteRepository $repository) => $repository
                     ->createQueryBuilder('s')

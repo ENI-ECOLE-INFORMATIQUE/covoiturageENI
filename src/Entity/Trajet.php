@@ -30,6 +30,7 @@ class Trajet
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'site_id', nullable: false)]
+    #[Assert\NotNull(message: 'Le campus concerné est obligatoire.')]
     private ?Site $site = null;
 
     #[ORM\Column(enumType: SensTrajet::class, length: 20)]
