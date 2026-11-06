@@ -31,6 +31,12 @@ class Site
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $codePostal = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $siteWeb = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -92,6 +98,30 @@ class Site
     public function setCodePostal(?string $codePostal): static
     {
         $this->codePostal = $codePostal;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getSiteWeb(): ?string
+    {
+        return $this->siteWeb;
+    }
+
+    public function setSiteWeb(?string $siteWeb): static
+    {
+        $this->siteWeb = $siteWeb;
 
         return $this;
     }

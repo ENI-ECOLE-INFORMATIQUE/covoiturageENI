@@ -1,22 +1,98 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="p-4 mb-4 bg-primary text-white rounded-3">
-        <div class="row align-items-center">
-            <div class="col-md-7">
-                <h1 class="display-6 fw-bold">ENI Covoiturage</h1>
-                <p class="mb-0">Trouvez un trajet vers votre campus ou proposez vos places.</p>
+    {# Hero d'accueil (inspiré de la page d'atterrissage ENI Covoiturage) #}
+    <div class="p-5 mb-4 rounded-3 text-white"
+         style="background: linear-gradient(rgba(13, 71, 161, .85), rgba(13, 71, 161, .85)), url('{{ asset('img/banner-ecologique_conviviale.jpg') }}') center/cover no-repeat;">
+        <div class="col-lg-9">
+            <h1 class="display-6 fw-bold">Bienvenue sur votre plateforme de covoiturage !</h1>
+            <p class="lead mb-2">
+                Vous êtes étudiants, salariés ou intervenants à ENI École Informatique ?
+                Cette plateforme de covoiturage est spécialement conçue pour vous !
+            </p>
+            <p class="mb-3">
+                Que vous vous rendiez vers l'un de nos campus, connectez-vous avec d'autres personnes
+                de la communauté ENI et transformez vos trajets en moments d'échange et de convivialité.
+            </p>
+            {% if app.user %}
+                <a href="{{ path('app_trajet_nouveau') }}" class="btn btn-light btn-lg">Publier un trajet</a>
+            {% else %}
+                <a href="{{ path('app_register') }}" class="btn btn-light btn-lg">Créer mon compte @campus-eni.fr</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Avantages #}
+    <h2 class="h4 mb-3">Pourquoi utiliser le covoiturage ENI ?</h2>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="fs-2">💰</div>
+                    <h3 class="h6 fw-bold mb-1">Économique</h3>
+                    <p class="card-text text-muted small mb-0">Réduisez considérablement vos frais de transport</p>
+                </div>
             </div>
-            <div class="col-md-5 text-md-end mt-3 mt-md-0">
-                {% if app.user %}
-                    <a href="{{ path('app_trajet_nouveau') }}" class="btn btn-light">Publier un trajet</a>
-                {% else %}
-                    <a href="{{ path('app_register') }}" class="btn btn-light">Créer mon compte @campus-eni.fr</a>
-                {% endif %}
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="fs-2">🌱</div>
+                    <h3 class="h6 fw-bold mb-1">Écologique</h3>
+                    <p class="card-text text-muted small mb-0">Diminuez votre empreinte carbone</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="fs-2">👥</div>
+                    <h3 class="h6 fw-bold mb-1">Convivial</h3>
+                    <p class="card-text text-muted small mb-0">Créez des liens</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="fs-2">🚗</div>
+                    <h3 class="h6 fw-bold mb-1">Pratique</h3>
+                    <p class="card-text text-muted small mb-0">Facilitez vos déplacements vers les campus</p>
+                </div>
             </div>
         </div>
     </div>
 
+    {# Nos campus #}
+    <h2 class="h4 mb-3">Nos campus</h2>
+    <div class="row g-3 mb-4">
+        {% for c in campus %}
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="{{ asset(c.image) }}" class="card-img-top" alt="{{ c.site.nom }}"
+                         style="height: 140px; object-fit: cover;">
+                    <div class="card-body">
+                        <h3 class="h6 card-title text-uppercase fw-bold">{{ c.site.nom }}</h3>
+                        <p class="card-text text-muted small mb-0">
+                            {% if c.site.adresse %}
+                                {{ c.site.adresse }}, {{ c.site.ville }} ({{ c.site.codePostal }})
+                            {% else %}
+                                Campus en ligne
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-0 d-flex gap-2">
+                        <a href="{{ path('app_campus_show', {'id': c.site.id}) }}"
+                           class="btn btn-outline-secondary flex-fill">Détails</a>
+                        <a href="{{ path('app_home', {'trajet_search': {'site': c.site.id}}) }}"
+                           class="btn btn-primary flex-fill">Covoiturer</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# Recherche de trajets #}
     <div class="card mb-4">
         <div class="card-body">
             {{ form_start(formRecherche) }}
@@ -33,7 +109,7 @@
         </div>
     </div>
 
-    <h2 class="mb-3">Trajets disponibles ({{ trajets|length }})</h2>
+    <h2 class="h4 mb-3">Trajets disponibles ({{ trajets|length }})</h2>
 
     {% if trajets is empty %}
         <div class="alert alert-info">
@@ -42,26 +118,7 @@
     {% else %}
         <div class="row">
             {% for trajet in trajets %}
-                <div class="col-md-6 mb-3">
-                    <div class="card h-100 {% if trajet.sens.value == 'vers_site' %}border-success-subtle{% else %}border-info-subtle{% endif %}">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <h5 class="card-title mb-1">
-                                    {{ trajet.villeDepart }} <span class="text-muted">&rarr;</span> {{ trajet.villeArrivee }}
-                                </h5>
-                                <span class="badge bg-primary">{{ trajet.sens.libelle }}</span>
-                            </div>
-                            <p class="text-muted mb-2">
-                                {{ trajet.dateDepart|date('d/m/Y à H:i') }} &middot; {{ trajet.site.nom }}
-                            </p>
-                            <p class="mb-2">
-                                <strong>{{ trajet.getNbPlacesRestantes }}</strong> place(s) restante(s)
-                                &middot; {{ trajet.prix|number_format(2, ',', ' ') }} €
-                            </p>
-                            <a href="{{ path('app_trajet_show', {'id': trajet.id}) }}" class="btn btn-sm btn-outline-primary">Voir le trajet</a>
-                        </div>
-                    </div>
-                </div>
+                {% include 'trajet/_card.html.twig' %}
             {% endfor %}
         </div>
     {% endif %}

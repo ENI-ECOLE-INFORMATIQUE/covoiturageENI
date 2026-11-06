@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\Site;
 use App\Entity\Trajet;
 use App\Form\TrajetSearchType;
+use App\Repository\SiteRepository;
 use App\Repository\TrajetRepository;
+use App\Service\ImageCampus;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,6 +17,8 @@ final class HomeController extends AbstractController
 {
     public function __construct(
         private readonly TrajetRepository $trajetRepository,
+        private readonly SiteRepository $siteRepository,
+        private readonly ImageCampus $imageCampus,
     ) {
     }
 
@@ -40,6 +45,20 @@ final class HomeController extends AbstractController
         return $this->render('home/index.html.twig', [
             'formRecherche' => $form,
             'trajets' => $trajets,
+            'campus' => $this->campusActifs(),
         ]);
+    }
+
+    /**
+     * @return array<int, array{site: Site, image: string}>
+     */
+    private function campusActifs(): array
+    {
+        $campus = [];
+        foreach ($this->siteRepository->findBy(['actif' => true], ['nom' => 'ASC']) as $site) {
+            $campus[] = ['site' => $site, 'image' => $this->imageCampus->pour($site)];
+        }
+
+        return $campus;
     }
 }

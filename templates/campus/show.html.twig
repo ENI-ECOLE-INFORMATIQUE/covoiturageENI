@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ site.nom }} — ENI Covoiturage{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <img src="{{ asset(image) }}" class="card-img-top" alt="{{ site.nom }}"
+                     style="height: 260px; object-fit: cover;">
+                <div class="card-body">
+                    <h1 class="h3 card-title text-uppercase fw-bold">{{ site.nom }}</h1>
+                    <ul class="list-unstyled text-muted mb-0">
+                        {% if site.adresse %}
+                            <li class="mb-2">
+                                <strong>Adresse</strong><br>
+                                {{ site.adresse }} - {{ site.codePostal }} {{ site.ville|upper }}
+                            </li>
+                        {% endif %}
+                        {% if site.siteWeb %}
+                            <li>
+                                <strong>Site web</strong><br>
+                                <a href="{{ site.siteWeb }}" target="_blank" rel="noopener">{{ site.siteWeb }}</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <h2 class="h4">Présentation : {{ site.nom|replace({'ENI ': ''}) }}</h2>
+            {% if site.description %}
+                <p style="white-space: pre-line;">{{ site.description }}</p>
+            {% else %}
+                <p class="text-muted">La présentation de ce campus sera bientôt disponible.</p>
+            {% endif %}
+
+            <h2 class="h4 mt-4">Annonces de covoiturage</h2>
+            <p>Consultez les annonces ou publiez la vôtre.</p>
+            <div class="d-flex gap-2 mb-3">
+                <a href="{{ path('app_home', {'trajet_search': {'site': site.id}}) }}" class="btn btn-primary">
+                    Voir les trajets de ce campus
+                </a>
+                {% if app.user %}
+                    <a href="{{ path('app_trajet_nouveau') }}" class="btn btn-outline-primary">Publier un trajet</a>
+                {% endif %}
+            </div>
+
+            {% if trajets is empty %}
+                <div class="alert alert-info mb-0">Aucune annonce de covoiturage pour ce campus pour le moment.</div>
+            {% else %}
+                <div class="row">
+                    {% for trajet in trajets %}
+                        {% include 'trajet/_card.html.twig' %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

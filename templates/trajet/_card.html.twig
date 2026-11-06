@@ -1,0 +1,20 @@
+<div class="col-md-6 mb-3">
+    <div class="card h-100 {% if trajet.sens.value == 'vers_site' %}border-success-subtle{% else %}border-info-subtle{% endif %}">
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <h5 class="card-title mb-1">
+                    {{ trajet.villeDepart }} <span class="text-muted">&rarr;</span> {{ trajet.villeArrivee }}
+                </h5>
+                <span class="badge bg-primary">{{ trajet.sens.libelle }}</span>
+            </div>
+            <p class="text-muted mb-2">
+                {{ trajet.dateDepart|date('d/m/Y à H:i') }} &middot; {{ trajet.site.nom }}
+            </p>
+            <p class="mb-2">
+                <strong>{{ trajet.getNbPlacesRestantes }}</strong> place(s) restante(s)
+                &middot; {{ trajet.prix|number_format(2, ',', ' ') }} €
+            </p>
+            <a href="{{ path('app_trajet_show', {'id': trajet.id}) }}" class="btn btn-sm btn-outline-primary">Voir le trajet</a>
+        </div>
+    </div>
+</div>

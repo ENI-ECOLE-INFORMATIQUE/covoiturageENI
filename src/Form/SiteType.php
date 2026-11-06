@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Site;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -18,6 +19,8 @@ final class SiteType extends AbstractType
             ->add('adresse', TextType::class, ['label' => 'Adresse (facultatif)', 'required' => false])
             ->add('ville', TextType::class, ['label' => 'Ville (facultatif)', 'required' => false])
             ->add('codePostal', TextType::class, ['label' => 'Code postal (facultatif)', 'required' => false])
+            ->add('siteWeb', TextType::class, ['label' => 'Site web du campus (facultatif)', 'required' => false])
+            ->add('description', TextareaType::class, ['label' => 'Présentation du campus (facultatif)', 'required' => false])
             ->add('submit', SubmitType::class, ['label' => 'Enregistrer le campus']);
     }
 
